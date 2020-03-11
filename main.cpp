@@ -6,10 +6,11 @@
 
 using namespace std;
 
-double leaveOneOutValidation(vector<int> data, vector<int>currset, int data, int choice);
-void featureSearch(vector<int> data, int choice);
-void const print(vector<int> data);
-bool const intersect(vector<int> data, int n);
+double leaveOneOutValidation(vector< vector<double> >, vector<int>, int, int);
+void forward_Selection(vector< vector<double> >);
+void print(vector<int>);
+double euclidean_distance(vector<double>, vector<double>, vector<int>, int, int);
+bool intersect(vector<int>, int );
 
 int main(){
     vector< vector <double> > data;
@@ -50,7 +51,6 @@ int main(){
     return 0; 
 }
 
-void print(vector<int> data);
 
 //normalize 
 void normalize(vector<vector<double> > &data) {
@@ -66,7 +66,7 @@ void normalize(vector<vector<double> > &data) {
             count++;
         }
         mean = sum / count;
-        for (int i = 0; i < data.size(); i++) {
+        for (int j = 0; j < data.size(); j++) {
             mid += pow((data.at(j).at(i)) - mean,2);
         }
         dev = sqrt(mid/count);
@@ -77,5 +77,51 @@ void normalize(vector<vector<double> > &data) {
             }
         }
     }
+}
+
+bool intersect(vector<int> data, int n) {
+	for (int i = 0; i < data.size(); i++) {
+		if (data.at(i) == n) return true;
+	}
+	return false;
+}
+
+double leaveOneOutValidation(vector<vector<double>> data, vector<int>currset, int n, int choice) {
+	double correct = 0;
+
+	for (int i = 0; i < data.size(); i++) {
+		vector<double> temp = data.at(i);
+		vector<double> temp2;
+		double nearestNeighbor = DBL_MAX;
+
+		for (int j = 0; j < data.size(); j++) {
+			//not checking same row
+			if (j != i) {
+				double dist = euclidean_distance(temp, data.at(j), currset, n, choice);
+				if (dist < nearestNeighbor) {
+					nearestNeighbor = dist;
+					temp2 = data.at(j);
+				}
+			}
+		}
+
+		if (temp.at(0) == temp2.at(0)) {
+			correct++;
+		}
+	}
+	return correct / data.size();
+}
+
+double euclidean_distance(vector<double> x, vector<double> y, vector<int> currset, int n, int choice) {
+	double dist = 0;
+
+	for (int i = 0; i < currset.size(); i++) {
+		dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
+	}
+	if (choice == 1) {
+		dist += (pow(x.at(n) - y.at(n), 2));
+	}
+
+	return sqrt(dist);
 }
 
