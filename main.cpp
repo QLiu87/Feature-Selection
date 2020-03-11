@@ -44,10 +44,38 @@ int main(){
         cout << "Error opening file." << endl;
         return 1;
     }
-    cout << "This dataset has " << data[0].size()-1 << " features(not including the class atribute), with " << data.size()-1 << " instances." << endl << endl;
+    cout << "This  has " << data[0].size()-1 << " features(not including the class atribute), with " << data.size()-1 << " instances." << endl << endl;
    featureSearch(data,num);
 
     return 0; 
 }
 
-void print(vector
+void print(vector<int> data);
+
+//normalize 
+void normalize(vector<vector<double> > &data) {
+    for (int i = 1; i < data.at(0).size(); i++) {
+        vector<double> temp;
+        double mean = 0;
+        double dev = 0;
+        double sum = 0;
+        double count = 0;
+        double mid = 0;
+        for (int j = 0; j < data.size(); j++) {
+            sum += data.at(j).at(i);
+            count++;
+        }
+        mean = sum / count;
+        for (int i = 0; i < data.size(); i++) {
+            mid += pow((data.at(j).at(i)) - mean,2);
+        }
+        dev = sqrt(mid/count);
+
+        if (dev != 0) {
+            for (int y = 0; y < data.size(); y++) {
+                data.at(y).at(i) = (data.at(y).at(i) - mean) / dev;
+            }
+        }
+    }
+}
+
