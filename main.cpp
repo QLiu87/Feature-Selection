@@ -114,12 +114,12 @@ bool intersect(vector<int> data, int n) {
 double leaveOneOutValidation(vector<vector<double>> data, vector<int>currset, int n, int choice) {
 	double correct = 0;
 
-	for (size_t i = 0; i < data.size(); i++) {
+	for (size_t i = 0; i < data.size()-1; i++) {
 		vector<double> temp = data.at(i);
 		vector<double> temp2;
 		double nearestNeighbor = DBL_MAX;
 
-		for (size_t j = 0; j < data.size(); j++) {
+		for (size_t j = 0; j < data.size()-1; j++) {
 			//not checking same row
 			if (j != i) {
 				double dist = euclidean_distance(temp, data.at(j), currset, n, choice);
@@ -130,7 +130,7 @@ double leaveOneOutValidation(vector<vector<double>> data, vector<int>currset, in
 			}
 		}
 
-		if (temp.at(0) == temp2.at(0)) {
+		if ((temp2.at(0) == 1 && temp.at(0) == 1) || (temp2.at(0) == 2 && temp.at(0) == 2)) {
 			correct++;
 		}
 	}
