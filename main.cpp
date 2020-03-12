@@ -4,6 +4,7 @@
 #include <sstream>
 #include <math.h>
 #include <iomanip>
+#include <cfloat>
 using namespace std;
 
 double leaveOneOutValidation(vector< vector<double> >, vector<int>, int, int);
@@ -24,15 +25,11 @@ int main(){
     cout << "Type in the name of the file to test: ";
     cin >> file;
 
-    cout << endl << "Type the number of the algorithm you want to run." << endl << endl;
-    cout << "\t1)  Forward Selection" << endl << "\t2)  Backward Elimination" << endl << "\t3)  Better Search Algorithm" << endl << "\t\t\t";
-    cin >> num;
-
     double t;
 	double nn_4_feature = 0;
     string input_data;
     ifstream myfile(file);
-
+	cout << "File name is: " << file << endl;
     if(myfile.is_open()){
         while(!myfile.eof()){
             vector<double> temp;
@@ -49,21 +46,27 @@ int main(){
         cout << "Error opening file." << endl;
         return 1;
     }
+
+	cout << endl << "Type the number of the algorithm you want to run." << endl << endl;
+	cout << "\t1)  Forward Selection" << endl << "\t2)  Backward Elimination" << endl << "\t3)  Better Search Algorithm" << endl << "\t\t\t";
+	cin >> num;
     cout << "This  has " << data[0].size()-1 << " features(not including the class atribute), with " << data.size()-1 << " instances." << endl << endl;
 	cout << "Please wait while I normalize the data... Done!" << endl;
 	vector<int> all2(data.at(0).size() - 1);
-	for (size_t i = 1; i < data.at(0).size(); i++) {//fills vector with all features;
-		all2.at(i - 1) = i;
-	}
-	nn_4_feature = leaveOneOutValidation(data, all2, data.at(0).size(), 1);
-	cout << "Running nearest neighbor with all 4 features, using “leaving-one-out” evaluation, I get an accuracy of ";
-	cout << setprecision(2) << fixed << nn_4_feature * 100 << "% \n";
+	//for (size_t i = 1; i < data.at(0).size(); i++) {//fills vector with all features;
+	//	all2.at(i - 1) = i;
+	//}
+	//nn_4_feature = leaveOneOutValidation(data, all2, data.at(0).size(), 1);
+	//cout << "Running nearest neighbor with all 4 features, using “leaving-one-out” evaluation, I get an accuracy of ";
+	//cout << setprecision(2) << fixed << nn_4_feature * 100 << "% \n";
 	cout << "Beginning search\n";
 	normalize(data);
+
 	if (num == 1) {
 		Forward_Selection(data);
 	}
 	else{
+		cout << "In backward\n";
 		Backward_Selection(data);
 	}
 
@@ -73,25 +76,28 @@ int main(){
 
 //normalize 
 void normalize(vector<vector<double> > &data) {
+	double mean = 0;
+	double dev = 0;
+	double sum = 0;
+	double count = 0;
+	double mid = 0;
+
     for (size_t i = 1; i < data.at(0).size(); i++) {
         vector<double> temp;
-        double mean = 0;
-        double dev = 0;
-        double sum = 0;
-        double count = 0;
-        double mid = 0;
-        for (size_t j = 0; j < data.size(); j++) {
+        
+        for (size_t j = 0; j < data.size()-1; j++) {
+
             sum += data.at(j).at(i);
             count++;
         }
         mean = sum / count;
-        for (size_t j = 0; j < data.size(); j++) {
+        for (size_t j = 0; j < data.size()-1; j++) {
             mid += pow((data.at(j).at(i)) - mean,2);
         }
         dev = sqrt(mid/count);
 
         if (dev != 0) {
-            for (size_t y = 0; y < data.size(); y++) {
+            for (size_t y = 0; y < data.size()-1; y++) {
                 data.at(y).at(i) = (data.at(y).at(i) - mean) / dev;
             }
         }
@@ -133,13 +139,13 @@ double leaveOneOutValidation(vector<vector<double>> data, vector<int>currset, in
 
 double euclidean_distance(vector<double> x, vector<double> y, vector<int> currset, int n, int choice) {
 	double dist = 0;
-
 	for (size_t i = 0; i < currset.size(); i++) {
-		dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
+		dist += (pow(x.at(currset.at(i)-1) - y.at(currset.at(i)-1), 2));
 	}
-	if (choice == 1) {
-		dist += (pow(x.at(n) - y.at(n), 2));
-	}
+	
+	//if (choice == 1) {
+	//	dist += (pow(x.at(n-1) - y.at(n-1), 2));
+	//}
 
 	return sqrt(dist);
 }
