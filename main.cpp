@@ -16,18 +16,16 @@ void print(vector<int>);
 float euclidean_distance(vector<float>, vector<float>, vector<int>, int, int);
 bool intersect(vector<int>, int );
 vector<int> remove_feature(vector<int>, int);
-///////////////////
-//float find_mean(vector<float> x);
-//float find_standard_dev(vector<float> x);
+
 
 int main(){
     vector< vector <float> > data;
-    string file = "cs_170_small47.txt";
+    string file = "cs_170_small80.txt";
     int num;
 
     cout << "Welcome to Qi Liu's Feature Selection Algorithm." << endl;
     cout << "Type in the name of the file to test: ";
-    //cin >> file;
+    cin >> file;
 
     float t;
 	float nn_4_feature = 0;
@@ -130,7 +128,7 @@ float leaveOneOutValidation(vector<vector<float>> data, vector<int>currset, int 
 		float nearestNeighbor = DBL_MAX;
 
 		for (size_t j = 0; j < data.size()-1; j++) {
-			//not checking same row
+
 			if (j != i) {
 				float dist = euclidean_distance(temp, data.at(j), currset, n, choice);
 				if (dist < nearestNeighbor) {
@@ -149,7 +147,7 @@ float leaveOneOutValidation(vector<vector<float>> data, vector<int>currset, int 
 float euclidean_distance(vector<float> x, vector<float> y, vector<int> currset, int n, int choice) {
 	float dist = 0;
 	for (size_t i = 0; i < currset.size(); i++) {
-		//dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
+
 		dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
 	}
 	
