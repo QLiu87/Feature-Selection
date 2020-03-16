@@ -4,35 +4,39 @@
 #include <sstream>
 #include <math.h>
 #include <iomanip>
+#include <chrono>
 #include <cfloat>
 using namespace std;
-
-double leaveOneOutValidation(vector< vector<double> >, vector<int>, int, int);
-void normalize(vector<vector<double> > &);
-void Forward_Selection(vector< vector<double> >);
-void Backward_Selection(vector< vector<double> >);
+using namespace std::chrono;
+float leaveOneOutValidation(vector< vector<float> >, vector<int>, int, int);
+void normalize(vector<vector<float> > &);
+void Forward_Selection(vector< vector<float> >);
+void Backward_Selection(vector< vector<float> >);
 void print(vector<int>);
-double euclidean_distance(vector<double>, vector<double>, vector<int>, int, int);
+float euclidean_distance(vector<float>, vector<float>, vector<int>, int, int);
 bool intersect(vector<int>, int );
 vector<int> remove_feature(vector<int>, int);
+///////////////////
+//float find_mean(vector<float> x);
+//float find_standard_dev(vector<float> x);
 
 int main(){
-    vector< vector <double> > data;
-    string file;
+    vector< vector <float> > data;
+    string file = "cs_170_small47.txt";
     int num;
 
     cout << "Welcome to Qi Liu's Feature Selection Algorithm." << endl;
     cout << "Type in the name of the file to test: ";
-    cin >> file;
+    //cin >> file;
 
-    double t;
-	double nn_4_feature = 0;
+    float t;
+	float nn_4_feature = 0;
     string input_data;
     ifstream myfile(file);
 	cout << "File name is: " << file << endl;
     if(myfile.is_open()){
         while(!myfile.eof()){
-            vector<double> temp;
+            vector<float> temp;
             getline(myfile, input_data);    
             istringstream ss(input_data);
             while(ss >> t){
@@ -47,21 +51,25 @@ int main(){
         return 1;
     }
 
+	normalize(data);
+
 	cout << endl << "Type the number of the algorithm you want to run." << endl << endl;
 	cout << "\t1)  Forward Selection" << endl << "\t2)  Backward Elimination" << endl << "\t3)  Better Search Algorithm" << endl << "\t\t\t";
 	cin >> num;
-    cout << "This  has " << data[0].size()-1 << " features(not including the class atribute), with " << data.size()-1 << " instances." << endl << endl;
+    cout << "This has " << data[0].size()-1 << " features(not including the class atribute), with " << data.size()-1 << " instances." << endl << endl;
 	cout << "Please wait while I normalize the data... Done!" << endl;
-	vector<int> all2(data.at(0).size() - 1);
-	//for (size_t i = 1; i < data.at(0).size(); i++) {//fills vector with all features;
-	//	all2.at(i - 1) = i;
-	//}
-	//nn_4_feature = leaveOneOutValidation(data, all2, data.at(0).size(), 1);
-	//cout << "Running nearest neighbor with all 4 features, using “leaving-one-out” evaluation, I get an accuracy of ";
-	//cout << setprecision(2) << fixed << nn_4_feature * 100 << "% \n";
-	cout << "Beginning search\n";
-	normalize(data);
 
+	/*vector<int> all_feature(data.at(0).size() - 1);
+	for (size_t i = 1; i < data.at(0).size(); i++) {//fills vector with all features;
+		all_feature.at(i - 1) = i;
+	}
+	nn_4_feature = leaveOneOutValidation(data, all_feature, 9, 1);
+
+	cout << "Running nearest neighbor with all 10 features, using \"leaving-one-out\" evaluation, I get an accuracy of ";
+	cout << setprecision(2) << fixed << nn_4_feature * 100 << "% \n";
+	*/cout << "Beginning search\n";
+	
+	auto start = high_resolution_clock::now();
 	if (num == 1) {
 		Forward_Selection(data);
 	}
@@ -69,22 +77,24 @@ int main(){
 		cout << "In backward\n";
 		Backward_Selection(data);
 	}
+	auto stop = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(stop - start);
+	cout << "Time taken by algorithm: " << duration.count() << " milliseconds" << endl;
 
     return 0; 
 }
 
-
 //normalize 
-void normalize(vector<vector<double> > &data) {
-	double mean = 0;
-	double dev = 0;
-	double sum = 0;
-	double count = 0;
-	double mid = 0;
+void normalize(vector<vector<float> > &data) {
+	float mean = 0;
+	float dev = 0;
+	float sum = 0;
+	float count = 0;
+	float mid = 0;
 
     for (size_t i = 1; i < data.at(0).size(); i++) {
-        vector<double> temp;
-        
+        vector<float> temp;
+        //there's an empty line at the end of file, thus size()-1
         for (size_t j = 0; j < data.size()-1; j++) {
 
             sum += data.at(j).at(i);
@@ -111,58 +121,58 @@ bool intersect(vector<int> data, int n) {
 	return false;
 }
 
-double leaveOneOutValidation(vector<vector<double>> data, vector<int>currset, int n, int choice) {
-	double correct = 0;
+float leaveOneOutValidation(vector<vector<float>> data, vector<int>currset, int n, int choice) {
+	float correct = 0;
 
 	for (size_t i = 0; i < data.size()-1; i++) {
-		vector<double> temp = data.at(i);
-		vector<double> temp2;
-		double nearestNeighbor = DBL_MAX;
+		vector<float> temp = data.at(i);
+		vector<float> temp2;
+		float nearestNeighbor = DBL_MAX;
 
 		for (size_t j = 0; j < data.size()-1; j++) {
 			//not checking same row
 			if (j != i) {
-				double dist = euclidean_distance(temp, data.at(j), currset, n, choice);
+				float dist = euclidean_distance(temp, data.at(j), currset, n, choice);
 				if (dist < nearestNeighbor) {
 					nearestNeighbor = dist;
 					temp2 = data.at(j);
 				}
 			}
-		}
-
-		if ((temp2.at(0) == 1 && temp.at(0) == 1) || (temp2.at(0) == 2 && temp.at(0) == 2)) {
+		} 
+		if(temp2.at(0) == temp.at(0)){
 			correct++;
 		}
 	}
-	return correct / data.size();
+	return correct / static_cast<float>(data.size()-1);
 }
 
-double euclidean_distance(vector<double> x, vector<double> y, vector<int> currset, int n, int choice) {
-	double dist = 0;
+float euclidean_distance(vector<float> x, vector<float> y, vector<int> currset, int n, int choice) {
+	float dist = 0;
 	for (size_t i = 0; i < currset.size(); i++) {
-		dist += (pow(x.at(currset.at(i)-1) - y.at(currset.at(i)-1), 2));
+		//dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
+		dist += (pow(x.at(currset.at(i)) - y.at(currset.at(i)), 2));
 	}
 	
-	//if (choice == 1) {
-	//	dist += (pow(x.at(n-1) - y.at(n-1), 2));
-	//}
-
+	if (choice == 1) {
+		dist += (pow(x.at(n) - y.at(n), 2));
+	}
+	
 	return sqrt(dist);
 }
 
-void Forward_Selection(vector< vector<double> > data) {
+void Forward_Selection(vector< vector<float> > data) {
 	vector<int> curr_set;
 	vector<int> best_set;
-	double max_accuracy_global = DBL_MIN;
+	float max_accuracy_global = 0;
 
 	for (size_t i = 1; i < data.at(0).size(); i++) {
 		int feature_to_add = 0;
-		double max_accuracy_local = DBL_MIN;
+		float max_accuracy_local = 0;
 
 		for (size_t j = 1; j < data.at(0).size(); j++) {
 			//check not the same feature
 			if (!intersect(curr_set, j)) {
-				double accuracy_temp = 0;
+				float accuracy_temp = 0;
 				//find accuracy
 				accuracy_temp = leaveOneOutValidation(data, curr_set, j, 1);
 
@@ -204,23 +214,23 @@ void Forward_Selection(vector< vector<double> > data) {
 		 << max_accuracy_global * 100 << "%" << endl;
 }
 
-void Backward_Selection(vector< vector<double> > data) {
+void Backward_Selection(vector< vector<float> > data) {
 	vector<int> curr_set;
 	vector<int> best_set;
-	double max_accuracy_global = DBL_MIN;
+	float max_accuracy_global = 0;
 
 	for (size_t i = 1; i < data.at(0).size(); i++) {
 		curr_set.push_back(i);
 	}
 
-	for (size_t i = 1; i < data.at(0).size(); i++) {
+	for (size_t i = 1; i < data.at(0).size()-1; i++) {
 		int feature_to_remove = 0;
-		double max_accuracy_local = DBL_MIN;
+		float max_accuracy_local = 0;
 
 		for (size_t j = 1; j < data.at(0).size(); j++) {
 			//check the same feature
 			if (intersect(curr_set, j)) {
-				double accuracy_temp = 0;
+				float accuracy_temp = 0;
 				vector<int> feature_temp = remove_feature(curr_set, j);
 				//find accuracy
 				accuracy_temp = leaveOneOutValidation(data, feature_temp, j, 2);
